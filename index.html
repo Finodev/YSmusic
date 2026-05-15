@@ -53,7 +53,8 @@
         </div>
       </div>
 
-      <div class="small-cards-grid">
+      <!-- только Мне нравится, без Коллекции -->
+      <div class="small-cards-grid single">
         <div class="small-card" onclick="openPlayer()">
           <div class="small-card-img heart-bg">
             <svg viewBox="0 0 24 24" fill="#ff4060" width="22" height="22">
@@ -61,14 +62,6 @@
             </svg>
           </div>
           <div class="small-card-title">Мне нравится</div>
-        </div>
-        <div class="small-card" onclick="openPlayer()">
-          <div class="small-card-img star-bg">
-            <svg viewBox="0 0 24 24" fill="#f5e642" width="22" height="22">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-            </svg>
-          </div>
-          <div class="small-card-title">Коллекция</div>
         </div>
       </div>
 
@@ -133,14 +126,11 @@
         <span class="player-header-label">Моя волна по треку</span>
         <div class="player-header-title">CUPSIZE</div>
       </div>
-      <!-- пустой блок для баланса -->
       <div style="width:36px"></div>
     </header>
 
-    <!-- Обложка + субтитры -->
     <div class="cover-lyrics-wrap" id="coverWrap">
       <img src="img/cupsize_pink.jpg" alt="CUPSIZE" id="coverImg" class="cover-img">
-      <!-- субтитр — одна строка поверх обложки -->
       <div class="subtitle-view" id="subtitleView">
         <div class="subtitle-line" id="subtitleLine"></div>
       </div>
