@@ -12,7 +12,7 @@ const tracks = [
       { time: 0,   text: '' },
       { time: 21,  text: 'Привет, если ты мне не ответишь' },
       { time: 23,  text: 'Я поубиваю всех твоих тупых соседей' },
-      { time: 25,  text: 'Обоссу весь твой подъезд и буду долго сожалеть об этом' },
+      { time: 25,  text: 'Обоссу весь твой подъезд и буду долго сожалеть' },
       { time: 28,  text: 'Поэтому тебе лучше ответить!' },
       { time: 30,  text: 'Ты куришь, кажется, это мой фетиш' },
       { time: 32,  text: 'Но я никогда бы не сказал тебе «нет», веришь' },
@@ -40,28 +40,27 @@ const state = {
   lyricsOpen: false,
 };
 
-// элементы
-const audio         = document.getElementById('audioPlayer');
-const mainPage      = document.getElementById('mainPage');
-const playerPage    = document.getElementById('playerPage');
-const bigPlayBtn    = document.getElementById('bigPlayBtn');
-const bigPlayIcon   = document.getElementById('bigPlayIcon');
-const miniPlayIcon  = document.getElementById('miniPlayIcon');
-const heroIcon      = document.getElementById('heroIcon');
-const progBar       = document.getElementById('progBar');
-const progFill      = document.getElementById('progFill');
-const progTime      = document.getElementById('progTime');
-const progDuration  = document.getElementById('progDuration');
-const heartBtn      = document.getElementById('heartBtn');
-const miniLikeBtn   = document.getElementById('miniLikeBtn');
-const volBtn        = document.getElementById('volBtn');
-const volIcon       = document.getElementById('volIcon');
-const repeatBtn     = document.getElementById('repeatBtn');
-const lyricsBtn     = document.getElementById('lyricsBtn');
-const coverImg      = document.getElementById('coverImg');
-const subtitleView  = document.getElementById('subtitleView');
-const subtitleLine  = document.getElementById('subtitleLine');
-const miniPlayer    = document.getElementById('miniPlayer');
+const audio        = document.getElementById('audioPlayer');
+const mainPage     = document.getElementById('mainPage');
+const playerPage   = document.getElementById('playerPage');
+const bigPlayBtn   = document.getElementById('bigPlayBtn');
+const bigPlayIcon  = document.getElementById('bigPlayIcon');
+const miniPlayIcon = document.getElementById('miniPlayIcon');
+const heroIcon     = document.getElementById('heroIcon');
+const progBar      = document.getElementById('progBar');
+const progFill     = document.getElementById('progFill');
+const progTime     = document.getElementById('progTime');
+const progDuration = document.getElementById('progDuration');
+const heartBtn     = document.getElementById('heartBtn');
+const miniLikeBtn  = document.getElementById('miniLikeBtn');
+const volBtn       = document.getElementById('volBtn');
+const volIcon      = document.getElementById('volIcon');
+const repeatBtn    = document.getElementById('repeatBtn');
+const lyricsBtn    = document.getElementById('lyricsBtn');
+const coverImg     = document.getElementById('coverImg');
+const subtitleView = document.getElementById('subtitleView');
+const subtitleLine = document.getElementById('subtitleLine');
+const miniPlayer   = document.getElementById('miniPlayer');
 
 const ICON = {
   play:   '<path d="M8 5v14l11-7z"/>',
@@ -70,7 +69,6 @@ const ICON = {
   volOff: '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>',
 };
 
-// ── загрузка трека ──
 function loadTrack(idx) {
   const t = tracks[idx];
   audio.src = t.src;
@@ -82,10 +80,10 @@ function loadTrack(idx) {
   progTime.textContent = '0:00';
   progDuration.textContent = '0:00';
   miniPlayer.style.setProperty('--mini-prog', '0%');
+  lastLyricIdx = -1;
   subtitleLine.textContent = '';
 }
 
-// ── плей/пауза ──
 function togglePlay() {
   state.isPlaying ? audio.pause() : audio.play().catch(() => {});
 }
@@ -111,14 +109,14 @@ audio.addEventListener('ended', () => {
   else nextTrack();
 });
 
-// ── прогресс ──
 audio.addEventListener('timeupdate', () => {
   if (!audio.duration) return;
   const pct = (audio.currentTime / audio.duration) * 100;
   progFill.style.width = pct + '%';
   miniPlayer.style.setProperty('--mini-prog', pct + '%');
   progTime.textContent = fmt(audio.currentTime);
-  if (state.lyricsOpen) updateSubtitle(audio.currentTime);
+  // субтитры обновляем всегда, показываются только если lyricsOpen
+  updateSubtitle(audio.currentTime);
 });
 
 audio.addEventListener('loadedmetadata', () => {
@@ -137,25 +135,25 @@ document.addEventListener('mousemove',  e => { if (dragging) seekDrag(e); });
 document.addEventListener('touchmove',  e => { if (dragging) seekDrag(e.touches[0]); }, { passive: true });
 document.addEventListener('mouseup',    () => { dragging = false; });
 document.addEventListener('touchend',   () => { dragging = false; });
+
 function seekDrag(e) {
   const r = progBar.getBoundingClientRect();
   if (audio.duration) audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration;
 }
 
-// ── треки ──
 function prevTrack() {
   if (audio.currentTime > 3) { audio.currentTime = 0; return; }
   state.trackIndex = (state.trackIndex - 1 + tracks.length) % tracks.length;
   loadTrack(state.trackIndex);
   if (state.isPlaying) audio.play().catch(() => {});
 }
+
 function nextTrack() {
   state.trackIndex = (state.trackIndex + 1) % tracks.length;
   loadTrack(state.trackIndex);
   if (state.isPlaying) audio.play().catch(() => {});
 }
 
-// ── лайк ──
 function toggleLike() {
   state.isLiked = !state.isLiked;
   [heartBtn, miniLikeBtn].forEach(btn => {
@@ -166,7 +164,6 @@ function toggleLike() {
   });
 }
 
-// ── мут ──
 function toggleMute() {
   state.isMuted = !state.isMuted;
   audio.muted = state.isMuted;
@@ -174,29 +171,28 @@ function toggleMute() {
   volIcon.innerHTML = state.isMuted ? ICON.volOff : ICON.volOn;
 }
 
-// ── повтор ──
 function toggleRepeat() {
   state.isRepeat = !state.isRepeat;
   repeatBtn.classList.toggle('active', state.isRepeat);
 }
 
-// ── плеер открыть/закрыть ──
 function openPlayer() {
   playerPage.classList.add('open');
   mainPage.classList.add('slide-down');
 }
+
 function closePlayer() {
   playerPage.classList.remove('open');
   mainPage.classList.remove('slide-down');
 }
 
-// свайп вниз
 let swipeY = 0;
 playerPage.addEventListener('touchstart', e => { swipeY = e.touches[0].clientY; }, { passive: true });
 playerPage.addEventListener('touchend',   e => { if (e.changedTouches[0].clientY - swipeY > 80) closePlayer(); }, { passive: true });
 
 // ── субтитры ──
 let lastLyricIdx = -1;
+let changeTimeout = null;
 
 function updateSubtitle(currentTime) {
   const lines = tracks[state.trackIndex].lyrics;
@@ -209,23 +205,36 @@ function updateSubtitle(currentTime) {
 
   const text = lines[idx].text;
 
-  // анимация смены строки
-  subtitleLine.classList.add('changing');
-  setTimeout(() => {
+  // плавная смена: fade out → смена текста → fade in
+  subtitleLine.style.opacity = '0';
+  subtitleLine.style.transform = 'translateY(8px)';
+
+  clearTimeout(changeTimeout);
+  changeTimeout = setTimeout(() => {
     subtitleLine.textContent = text;
-    subtitleLine.classList.remove('changing');
-  }, 200);
+    subtitleLine.style.opacity = '1';
+    subtitleLine.style.transform = 'translateY(0)';
+  }, 220);
 }
 
 function toggleLyrics() {
   state.lyricsOpen = !state.lyricsOpen;
 
   if (state.lyricsOpen) {
+    // сначала показываем текущий текст без анимации
+    const lines = tracks[state.trackIndex].lyrics;
+    let idx = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (audio.currentTime >= lines[i].time) idx = i;
+    }
+    subtitleLine.textContent = lines[idx].text;
+    subtitleLine.style.opacity = '1';
+    subtitleLine.style.transform = 'translateY(0)';
+    lastLyricIdx = idx;
+
     subtitleView.classList.add('show');
     coverImg.classList.add('blurred');
     lyricsBtn.classList.add('active');
-    lastLyricIdx = -1;
-    if (audio.currentTime) updateSubtitle(audio.currentTime);
   } else {
     subtitleView.classList.remove('show');
     coverImg.classList.remove('blurred');
@@ -233,7 +242,6 @@ function toggleLyrics() {
   }
 }
 
-// ── клавиатура ──
 document.addEventListener('keydown', e => {
   if (e.code === 'Space')      { e.preventDefault(); togglePlay(); }
   if (e.code === 'ArrowRight') audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5);
@@ -247,5 +255,8 @@ function fmt(sec) {
   if (!sec || isNaN(sec)) return '0:00';
   return Math.floor(sec / 60) + ':' + String(Math.floor(sec % 60)).padStart(2, '0');
 }
+
+// ── добавляем transition на subtitleLine в CSS через JS ──
+subtitleLine.style.transition = 'opacity .22s ease, transform .22s ease';
 
 loadTrack(state.trackIndex);
